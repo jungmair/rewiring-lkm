@@ -1,0 +1,12 @@
+cmake-*
+.idea
+.tmp*
+.vscode
+build
+*.cmd
+*.ko
+*.mod.*
+*.mod
+*.o
+*.symvers
+*.order

@@ -79,7 +79,7 @@ PageId alloc_new_page(struct global_state *state)
 
 void inc_usage(struct global_state *state, PageId pageId)
 {
-	if (pageId > state->page_info_size) {
+	if (pageId >= state->page_info_size) {
 		//check for page id to be in range
 		printk(KERN_ALERT "REWIRING_LKM: invalid pageId:%u\n", pageId);
 		return;

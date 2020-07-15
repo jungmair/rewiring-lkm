@@ -307,6 +307,10 @@ static long handle_command(struct file *file, struct cmd *command)
         }
 		copy_from_user(newPageIds, command->payload,
 			       command->len * sizeof(PageId));
+		//check if any of the new PageIds is out-of-range
+		for (unsigned long i = 0; i < command->len; i++)
+			if (newPageIds[i] >= state->global->page_info_size)
+				return -EINVAL;
 		//process data
 		for (unsigned long i = 0; i < command->len; i++) {
 			set_page_id(state, command->start + i, newPageIds[i]);

@@ -281,10 +281,10 @@ static long handle_command(struct file *file, struct cmd *command)
 		vma = find_vma(mm, (unsigned long)command->mapping_start);
 		//error handling
 		if (vma == NULL) {
-			return -1;
+			return -EINVAL;
 		}
 		if (vma->vm_file != file) {
-			return -1;
+			return -EINVAL;
 		}
 	} else {
 		//CREATE_PAGE_IDS does not need a local state/mapping
@@ -296,14 +296,14 @@ static long handle_command(struct file *file, struct cmd *command)
 		//retrieve arguments: start,len, ptr to array in userspace
 		//check that parameters are valid
 		if (command->start + command->len > state->vpages_count) {
-			return -1;
+			return -EINVAL;
 		}
 
 		//create temporary array in kernel space and copy data
 		PageId *newPageIds = vmalloc(command->len * sizeof(PageId));
 		if(newPageIds==NULL){
             printk(KERN_WARNING "REWIRING_LKM: could not allocate memory for temporary storage!\n");
-            return -1;
+            return -ENOMEM;
         }
 		copy_from_user(newPageIds, command->payload,
 			       command->len * sizeof(PageId));
@@ -329,7 +329,7 @@ static long handle_command(struct file *file, struct cmd *command)
 	case GET_PAGE_IDS: {
 		//check that parameter are valid
 		if (command->start + command->len > state->vpages_count) {
-			return -1;
+			return -EINVAL;
 		}
 		//copy part of state->mapping to the userspace
 		copy_to_user(command->payload, &state->mapping[command->start],
@@ -340,7 +340,7 @@ static long handle_command(struct file *file, struct cmd *command)
 			PageId pageId = alloc_new_page(file->private_data);
 			if(pageId==PAGEID_UNASSIGNED){
                 printk(KERN_WARNING "REWIRING_LKM: could not allocate page!\n");
-                return -1;
+                return -ENOMEM;
             }
 			PageId *target_arr = command->payload;
 			copy_to_user(&target_arr[i], &pageId, sizeof(PageId));
@@ -363,7 +363,7 @@ static long dev_unlocked_ioctl(struct file *file, unsigned int cmd,
 {
 	if (cmd != REW_CMD) {
 		printk(KERN_WARNING "REWIRING_LKM: unknown cmd!");
-		return -1;
+		return -ENOTTY;
 	}
 	struct cmd command;
 	//retrieve command

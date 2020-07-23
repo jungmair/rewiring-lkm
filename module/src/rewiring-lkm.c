@@ -196,7 +196,7 @@ static int dev_mmap(struct file *filep, struct vm_area_struct *vma)
 	//link global state
 	state->global = filep->private_data;
 
-    if(!resize_mapping(state, (vma->vm_end - vma->vm_start))){
+    if(!resize_mapping(state, vma_pages(vma))){
         printk(KERN_WARNING "REWIRING_LKM: could not create mapping storage!\n");
         return 1;
     }
